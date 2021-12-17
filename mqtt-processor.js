@@ -67,4 +67,4 @@ function closeSocket(socket) {
 
 // CREATE SOCKET LISTENING ON PORT 9999
 var server = net.createServer(newSocket);
-server.listen(9999);
+server.listen(7777);
