@@ -1,4 +1,5 @@
 const net = require('net');
+const fs = require('fs')
 const mqtt = require('mqtt')
 var sockets = [];
 var options = {
@@ -7,10 +8,11 @@ var options = {
 };
 
 var ConfigIniParser = require("config-ini-parser").ConfigIniParser;
-var delimiter = "\r\n"; //or "\n" for *nux
+var delimiter = "\n"; //or "\n" for *nux
 parser = new ConfigIniParser(delimiter); //If don't assign the parameter delimiter then the default value \n will be used
 parser.parse(fs.readFileSync('/home/cunit/tmp/config/externrelay.ini', 'utf-8'));
-console.log(parser)
+var deviceuid = parser.get("relay", "Relay1").replace(/['"]+/g, '');
+
 
 const host = '127.0.0.1'
 const port = '1883'
@@ -53,7 +55,7 @@ function receiveData(socket, data, options) {
 
     console.log('DATA: recieved.');
     if (client.connected == true) {
-        client.publish("relays/10BAEABD380CA/v1/incoming", cleanData, options)
+        client.publish("relays/" + deviceuid + "/v1/incoming", cleanData, options)
         console.log('DATA: published.');
     }
 
