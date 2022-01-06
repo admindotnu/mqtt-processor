@@ -6,6 +6,11 @@ var options = {
     qos: 1
 };
 
+var ConfigIniParser = require("config-ini-parser").ConfigIniParser;
+var delimiter = "\r\n"; //or "\n" for *nux
+parser = new ConfigIniParser(delimiter); //If don't assign the parameter delimiter then the default value \n will be used
+parser.parse(fs.readFileSync('/home/cunit/tmp/config/externrelay.ini', 'utf-8'));
+console.log(parser)
 
 const host = '127.0.0.1'
 const port = '1883'
