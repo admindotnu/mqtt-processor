@@ -13,6 +13,8 @@ parser = new ConfigIniParser(delimiter); //If don't assign the parameter delimit
 parser.parse(fs.readFileSync('/home/cunit/tmp/config/externrelay.ini', 'utf-8'));
 var deviceuid = parser.get("relay", "Relay1").replace(/['"]+/g, '');
 
+var Memcached = require('memcached');
+var memcached = new Memcached('127.0.0.1:11211');
 
 const host = '127.0.0.1'
 const port = '1883'
