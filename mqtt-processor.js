@@ -37,7 +37,6 @@ function cleanInput(data) {
 
 function newSocket(socket) {
     sockets.push(socket);
-    // socket.write('Welcome to the Telnet server!\n');
     socket.on('data', function (data) {
         receiveData(socket, data);
     });
@@ -52,14 +51,20 @@ function newSocket(socket) {
  */
 function receiveData(socket, data, options) {
     var cleanData = cleanInput(data);
+    jsonObj = JSON.parse(cleanData);
+    jsonObj.DEVICEUID = deviceuid;
 
-    console.log('DATA: recieved.');
-    if (client.connected == true) {
-        client.publish("relays/" + deviceuid + "/v1/incoming", cleanData, options)
-        console.log('DATA: published.');
-    }
-
+    memcached.get('timer', function (err, data) {
+        jsonObj.MAXTIME = parseInt(data);
+        cleanData = cleanInput(JSON.stringify(jsonObj));
+//        console.log('DATA: recieved.');
+        if (client.connected == true) {
+            client.publish("relays/" + deviceuid + "/v1/incoming", cleanData, options)
+//          console.log('DATA: published.');
+        }
+    });
 }
+
 
 /*
  * Method executed when a socket ends
@@ -72,6 +77,6 @@ function closeSocket(socket) {
 }
 
 
-// CREATE SOCKET LISTENING ON PORT 9999
+// CREATE SOCKET LISTENING ON PORT 7777
 var server = net.createServer(newSocket);
 server.listen(7777);
