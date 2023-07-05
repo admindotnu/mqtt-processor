@@ -131,33 +131,6 @@ client.on('message', (topic, payload) => {
         });
     }
 
-        // process to memcache
-/*
-    memcached.get('outdaemon', function (err, data) {
-        var obj = JSON.parse(data.toString());
-
-
-
-    if(isEmpty((obj)))
-    {
-        console.log("NEW JSON");
-        obj.push("B "+ objincoming.BUTTON);
-        console.log(JSON.stringify(obj, null, 2));
-    }
-    else
-    {
-        console.log("ADJUST JSON");
-        obj.push("B "+ objincoming.BUTTON);
-        console.log(JSON.stringify(obj, null, 2));
-        memcached.set('outdaemon', JSON.stringify(obj), 0, function (err) {
-            if(err) throw new err;
-        });
-
-
-    }
-
-    });
-*/
 })
 
 /*
@@ -191,7 +164,7 @@ function receiveData(socket, data, options) {
         cleanData = cleanInput(JSON.stringify(jsonObj));
 //        console.log('DATA: recieved.');
         if (client.connected == true) {
-            client.publish("input/" + deviceuid + "/v1/input", cleanData, options)
+            client.publish("input/" + deviceuid + "/v1/incoming", cleanData, options)
           console.log('DATA: published.');
         }
     });
