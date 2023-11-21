@@ -7,17 +7,14 @@ var options = {
     qos: 1
 };
 
-//var ConfigIniParser = require("config-ini-parser").ConfigIniParser;
-//var delimiter = "\n"; //or "\n" for *nux
-//parser = new ConfigIniParser(delimiter); //If don't assign the parameter delimiter then the default value \n will be used
-//parser.parse(fs.readFileSync('/home/cunit/tmp/config/externrelay.ini', 'utf-8'));
-//var deviceuid = parser.get("relay", "Relay1").replace(/['"]+/g, '');
-
 var ConfigIniParser = require("config-ini-parser").ConfigIniParser;
 var delimiter = "\n"; //or "\n" for *nux
 parser = new ConfigIniParser(delimiter); //If don't assign the parameter delimiter then the default value \n will be used
 parser.parse(fs.readFileSync('/home/cunit/tmp/config/config.ini', 'utf-8'));
 var deviceuid = parser.get("externinput", "ConfigVal").replace(/['"]+/g, '');
+
+parsercoing = new ConfigIniParser(delimiter); //If don't assign the parameter delimiter then the default value \n will be used
+parsercoing.parse(fs.readFileSync('/home/cunit/tmp/i2c/idc_1.ini', 'utf-8'));
 
 var Memcached = require('memcached');
 var memcached = new Memcached('127.0.0.1:11211');
@@ -61,7 +58,7 @@ client.on('message', (topic, payload) => {
     if(objincoming.hasOwnProperty("BUTTON"))
     {
         // BUTTON
-        console.log("button");
+        console.log("BUTTON INPUT");
 
         memcached.get('outdaemon', function (err, data) {
 
@@ -98,7 +95,7 @@ client.on('message', (topic, payload) => {
     if(objincoming.hasOwnProperty("COIN"))
     {
         // COIN
-        console.log("coin");
+        console.log("COIN INPUT");
         memcached.get('outdaemon', function (err, data) {
 
             try {
@@ -107,25 +104,30 @@ client.on('message', (topic, payload) => {
                 obj = [];
             }
 
-            if(isEmpty((obj)))
-            {
-                console.log("NEW JSON");
-                obj.push("N "+ objincoming.COIN);
-                console.log(JSON.stringify(obj, null, 2));
-                memcached.set('outdaemon', JSON.stringify(obj), 0, function (err) {
-                    if(err) throw new err;
-                });
+            coinenabled = parsercoing.get(objincoming['COIN'], "status").replace(/['"]+/g, '');
+
+            if(coinenabled == 1) {
+                if (isEmpty((obj))) {
+                    console.log("NEW JSON");
+                    obj.push("N " + objincoming.COIN);
+                    console.log(JSON.stringify(obj, null, 2));
+                    memcached.set('outdaemon', JSON.stringify(obj), 0, function (err) {
+                        if (err) throw new err;
+                    });
+                } else {
+                    console.log("ADJUST JSON");
+                    obj.push("N " + objincoming.COIN);
+                    console.log(JSON.stringify(obj, null, 2));
+                    memcached.set('outdaemon', JSON.stringify(obj), 0, function (err) {
+                        if (err) throw new err;
+                    });
+
+
+                }
             }
             else
             {
-                console.log("ADJUST JSON");
-                obj.push("N "+ objincoming.COIN);
-                console.log(JSON.stringify(obj, null, 2));
-                memcached.set('outdaemon', JSON.stringify(obj), 0, function (err) {
-                    if(err) throw new err;
-                });
-
-
+                console.log("COIN INPUT " + objincoming['COIN'] + " IS DISABLED." );
             }
 
         });
@@ -162,7 +164,6 @@ function receiveData(socket, data, options) {
     memcached.get('timer', function (err, data) {
         jsonObj.MAXTIME = parseInt(data);
         cleanData = cleanInput(JSON.stringify(jsonObj));
-//        console.log('DATA: recieved.');
         if (client.connected == true) {
             client.publish("input/" + deviceuid + "/v1/incoming", cleanData, options)
           console.log('DATA: published.');
